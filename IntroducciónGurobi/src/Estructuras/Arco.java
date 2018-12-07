@@ -1,29 +1,21 @@
 package Estructuras;
 
 /*
- * Optimización Avanzada - 201810
- * 
- * Clase Arco. 
- * 
+ * Proyecto 2 Flujo en Redes 2018-20 
  */
 public class Arco{
 	
 	/*
-	 * TO-DO: Caracteristicas de un arco
-	 * Cola, cabeza y costo.
-	 * 
 	 * En este caso hacen falta la cabeza y el costo.
 	 */
-	private int tail;
+	private int fin;
 	
-	private int head;
+	private int inicio;
 	
-	private int cost;
+	private int tiempo;
 	
 	
-	/*
-	 * TO-DO: Metodo constructor. Crea un arco con cabeza, cola, y costo que vienen por parámetros.
-	 * 
+	/* 
 	 * En este caso hace falta fijar la cabeza y costo del arco a crear.
 	 */
 	
@@ -42,31 +34,31 @@ public class Arco{
 	 */
 	
 	public int getTail() {
-		return tail;
+		return fin;
 	}
 
 	public void setTail(int tail) {
-		this.tail = tail;
+		this.fin = tail;
 	}
 
 
 	public int getHead() {
-		return head;
+		return inicio;
 	}
 
 
 	public void setHead(int head) {
-		this.head = head;
+		this.inicio = head;
 	}
 
 
 	public int getCost() {
-		return cost;
+		return tiempo;
 	}
 
 
 	public void setCost(int cost) {
-		this.cost = cost;
+		this.tiempo = cost;
 	}
 	
 }
