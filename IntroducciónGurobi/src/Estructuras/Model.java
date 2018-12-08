@@ -2,9 +2,9 @@ package Estructuras;
 
 import gurobi.*;
 
-/*
+/**
  * Proyecto 2 Flujo en redes 2018-20
- *  
+ * @author Nicolás Hernández, Nicolás Vásquez 
  */
 public class Model {
 
@@ -12,7 +12,7 @@ public class Model {
 	private static int numNodosTotal;
 	
 	private static int[][] matrizAdyacencia;
-	
+	private static int numEsquinas;
 	
 	public static void main(String[] args){
 		
@@ -41,7 +41,9 @@ public class Model {
 			
 			//Crear las restricciones de balance
 			GRBLinExpr balance;
-			for(int i=0;i<migrafo.getNodos().size();i++){	
+			
+			//TODO: Estas restricciones de balance tienen que ser para todos los nodos menos el nodo inicial y final
+			for(int i=1;i<migrafo.getNodos().size();i++){	
 				balance = new GRBLinExpr();
 				for(int j=0;j<migrafo.getArcos().size();j++){
 					if(migrafo.getArcos().get(j).getTail()==migrafo.getNodos().get(i)){
@@ -52,7 +54,7 @@ public class Model {
 					}
 				}
 				
-				if(i!=0 && i!=6){
+				if(i!=0 && i<numNodosTotal-1){
 					model.addConstr(balance,GRB.EQUAL,0,"Balance nodo"+i);
 				} else if(i==0){
 					model.addConstr(balance, GRB.EQUAL, 1,"Balance_"+i);
@@ -61,11 +63,12 @@ public class Model {
 					model.addConstr(balance, GRB.EQUAL, -1,"Balance_"+i);
 				}
 			}
+			
 			//Crear restriccion para cortar una sola vez por cada arco
 			GRBLinExpr corteU;
-			for(int i =0; i<numNodosCorte-1;i++)
+			for(int i =1; i<numNodosCorte;i++)
 			{
-				for(int j =i+1; j<numNodosCorte-1;j++){
+				for(int j =i+1; j<numNodosCorte;j++){
 					corteU = new GRBLinExpr();
 					corteU.addTerm(1, model.getVarByName("x("+migrafo.getArcos().get(j).getTail()+","+migrafo.getArcos().get(j).getHead()+")"));
 					corteU.addTerm(1, model.getVarByName("x("+migrafo.getArcos().get(j).getHead()+","+migrafo.getArcos().get(j).getTail()+")"));
