@@ -1,5 +1,7 @@
 package Estructuras;
 
+import java.util.ArrayList;
+
 import gurobi.*;
 
 /**
@@ -85,9 +87,39 @@ public class Model {
 				
 				model.update();
 				
-				model.write("EjemploRMC.lp");
+				model.write("Cortes.lp");
 				
 				model.optimize();
+				
+				
+				//Imprimir los resultados
+				
+				double objval = model.get(GRB.DoubleAttr.ObjVal);
+				System.out.println("El tiempo total de corte es de: "+objval+" segundos");
+				
+				GRBVar[] vars=model.getVars();
+				ArrayList<String> camino= new ArrayList();
+				String anterior ="nodoInicial";
+				boolean termino=false;
+				int i=0;
+				while(!termino){
+					String n1=vars[i].get(GRB.StringAttr.VarName);
+					String nombrex=n1.split("x")[1];
+					String viaje=n1.split("(")[1];
+					String inicio=viaje.split(",")[0];
+					String destino=viaje.split(",")[1].split(")")[0];
+					double valorX=vars[i].get(GRB.DoubleAttr.X);
+					if(valorX>0 && inicio.equals(anterior)){
+						camino.add(inicio);
+						anterior = inicio;
+						i=0;
+						System.out.println(inicio+" >> "+destino +" km");
+					}
+					if(i==vars.length)
+					{
+						termino=true;
+					}
+				}
 			}
 			catch(GRBException e){
 				e.printStackTrace();
