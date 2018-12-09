@@ -1,9 +1,14 @@
 package Estructuras;
 
 import java.util.ArrayList;
-import Lectura.*;
 
-import gurobi.*;
+import Lectura.Reader;
+import gurobi.GRB;
+import gurobi.GRBEnv;
+import gurobi.GRBException;
+import gurobi.GRBLinExpr;
+import gurobi.GRBModel;
+import gurobi.GRBVar;
 
 /**
  * Proyecto 2 Flujo en redes 2018-20
@@ -20,9 +25,9 @@ public class Model {
 	public static void main(String[] args){
 		
 		//TODO: Cargar el archivo de datos para armar el grafo
-		Reader grafo = new Reader("./data/Temp_GCUT16.txt");
+		Reader grafo = new Reader("./data/Temp_GCUT1.txt");
 		
-		matrizAdyacencia = grafo.getMatrizAdyacencia();
+		matrizAdyacencia = ((Reader) grafo).getMatrizAdyacencia();
 		matrizCostos = grafo.getMatrizCostos();
 		//Existen 2 nodos dummies
 		numNodosTotal = grafo.getNumNodosAire()+grafo.getNumNodosCorte()+2;
@@ -32,7 +37,7 @@ public class Model {
 		GRBEnv env;
 		
 		try{
-			
+			System.out.println(matrizAdyacencia.length-1);
 			env = new GRBEnv(null);
 			GRBModel model = new GRBModel(env);
 			//Crear las variables binarias 
@@ -46,14 +51,6 @@ public class Model {
 					{
 						//Agrega variable que representa ir de nodo i a j y devuelta
 						model.addVar(0,1,matrizCostos[i][j],GRB.BINARY,"x("+i+","+j+")");
-						if(i==94 && j == 1)
-						{
-							System.out.println("si esta");
-						}
-					}
-					if(i==94 && j == 1)
-					{
-						System.out.println("si esta");
 					}
 				}
 			}
@@ -63,9 +60,9 @@ public class Model {
 			GRBLinExpr balance;
 			
 			//Estas restricciones de balance tienen que ser para todos los nodos menos el nodo inicial y final
-			for(int i=0;i<numNodosTotal;i++){	
+			for(int i=0;i<matrizAdyacencia.length;i++){	
 				balance = new GRBLinExpr();
-				for(int j=0;j<numNodosTotal;j++){
+				for(int j=0;j<matrizAdyacencia.length;j++){
 					//La sumatoria de los arcos disidentes
 					if(matrizAdyacencia[i][j]==1){
 						balance.addTerm(1, model.getVarByName("x("+i+","+j+")"));
@@ -73,6 +70,10 @@ public class Model {
 					//Menos la sumatoria de los arcos incidentes
 					if(matrizAdyacencia[j][i]==1){
 						balance.addTerm(-1, model.getVarByName("x("+j+","+i+")"));
+					}
+					if(i == matrizAdyacencia.length-1)
+					{
+						System.out.println(matrizAdyacencia[j][i]);;
 					}
 				}
 				
@@ -97,9 +98,6 @@ public class Model {
 						corteU = new GRBLinExpr();
 						corteU.addTerm(1, model.getVarByName("x("+i+","+j+")"));
 						corteU.addTerm(1, model.getVarByName("x("+j+","+i+")"));
-						System.out.println(model.getVarByName("x("+i+","+j+")"));
-						System.out.println(model.getVarByName("x("+j+","+i+")"));
-						System.out.println(j+","+i);
 						model.addConstr(corteU, GRB.EQUAL, 1, "Corte Unico entre "+i+" y "+j);
 					}
 				}
