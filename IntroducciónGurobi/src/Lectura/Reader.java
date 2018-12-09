@@ -1,3 +1,5 @@
+package Lectura;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -487,9 +489,9 @@ public class Reader {
 		return numNodosCorte;
 	}
 	
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		Reader hola = new Reader("./data/Temp_GCUT1.txt");
-	}
+//	public static void main(String[] args) {
+//		// TODO Auto-generated method stub
+//		Reader hola = new Reader("./data/Temp_GCUT1.txt");
+//	}
 
 }

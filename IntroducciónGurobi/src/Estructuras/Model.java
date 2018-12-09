@@ -71,10 +71,6 @@ public class Model {
 					if(matrizAdyacencia[j][i]==1){
 						balance.addTerm(-1, model.getVarByName("x("+j+","+i+")"));
 					}
-					if(i == matrizAdyacencia.length-1)
-					{
-						System.out.println(matrizAdyacencia[j][i]);;
-					}
 				}
 				
 				if(i!=0 && i<numNodosTotal-1){
@@ -98,7 +94,7 @@ public class Model {
 						corteU = new GRBLinExpr();
 						corteU.addTerm(1, model.getVarByName("x("+i+","+j+")"));
 						corteU.addTerm(1, model.getVarByName("x("+j+","+i+")"));
-						model.addConstr(corteU, GRB.EQUAL, 1, "Corte Unico entre "+i+" y "+j);
+						model.addConstr(corteU, GRB.GREATER_EQUAL, 1, "Corte Unico entre "+i+" y "+j);
 					}
 				}
 			}
@@ -123,27 +119,30 @@ public class Model {
 				
 				GRBVar[] vars=model.getVars();
 				ArrayList<String> camino= new ArrayList();
-				String anterior ="nodoInicial";
+				String anterior ="0";
 				boolean termino=false;
 				int i=0;
-				while(!termino){
+				
+				//Esto todavia no imprime bien los atributos
+				/*while(!termino){
 					String n1=vars[i].get(GRB.StringAttr.VarName);
 					String nombrex=n1.split("x")[1];
-					String viaje=n1.split("(")[1];
+					String viaje=n1.split("\\(")[1];
 					String inicio=viaje.split(",")[0];
-					String destino=viaje.split(",")[1].split(")")[0];
+					String destino=viaje.split(",")[1].split("\\)")[0];
 					double valorX=vars[i].get(GRB.DoubleAttr.X);
 					if(valorX>0 && inicio.equals(anterior)){
 						camino.add(inicio);
 						anterior = inicio;
 						i=0;
-						System.out.println(inicio+" >> "+destino +" km");
+						System.out.println(inicio+" >> "+destino );
 					}
-					if(i==vars.length)
+					if(i==vars.length-1)
 					{
 						termino=true;
 					}
-				}
+					i++;
+				}*/
 			}
 			catch(GRBException e){
 				e.printStackTrace();
