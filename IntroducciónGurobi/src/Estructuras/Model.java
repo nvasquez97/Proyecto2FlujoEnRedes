@@ -26,7 +26,7 @@ public class Model {
 	public static void main(String[] args){
 		tiempoMilis =  System.currentTimeMillis();
 		
-		Reader grafo = new Reader("./data/Temp_GCUT17.txt");
+		Reader grafo = new Reader("./data/Temp_GCUT4.txt");
 		
 		matrizAdyacencia = ((Reader) grafo).getMatrizAdyacencia();
 		matrizCostos = grafo.getMatrizCostos();
@@ -121,8 +121,8 @@ public class Model {
 				ArrayList<String> camino= new ArrayList<String>();
 				String anterior ="0";
 				boolean termino=false;
-				
-				/*for(int j=0; j<vars.length;j++)
+				int numArcos=0;
+				for(int j=0; j<vars.length;j++)
 				{
 					String n1=vars[j].get(GRB.StringAttr.VarName);
 					String viaje=n1.split("\\(")[1];
@@ -142,10 +142,13 @@ public class Model {
 							corteOno = "Aire";
 						}
 						System.out.println(inicio+" >> "+destino +" "+corteOno);
+						numArcos++;
 					}
-				}*/
+				}
 				int i=0;
+				int numArcosdos=0;
 				//Esto todavia no imprime bien los atributos
+				System.out.println("Impresion 2*************************");
 				while(!termino){
 					String n1=vars[i].get(GRB.StringAttr.VarName);
 					String viaje=n1.split("\\(")[1];
@@ -170,6 +173,7 @@ public class Model {
 								corteOno = "Aire";
 							}
 							System.out.println(inicio+" >> "+destino +" "+corteOno);
+							numArcosdos++;
 						}
 						else
 						{
@@ -182,11 +186,14 @@ public class Model {
 					}
 					i++;
 				}
+				System.out.println("Hacen falta "+(numArcos-numArcosdos)+" arcos en la solución");
+				
 			}
 			catch(GRBException e){
 				e.printStackTrace();
 			}
 		}
+	
 	
 	public static int darNumNodosCorte()
 	{

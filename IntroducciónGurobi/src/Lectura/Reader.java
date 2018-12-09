@@ -394,6 +394,10 @@ public class Reader {
 		}
 	}
 	
+	public Hashtable<String, Integer> getCorrespondenciaNodos() {
+		return correspondenciaNodos;
+	}
+
 	public void generarMatrices()
 	{
 		numNodosAire = nodosAire.size();
