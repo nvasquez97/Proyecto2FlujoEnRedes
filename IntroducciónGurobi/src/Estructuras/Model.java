@@ -25,7 +25,7 @@ public class Model {
 	
 	public static void main(String[] args){
 		tiempoMilis =  System.currentTimeMillis();
-		//TODO: Cargar el archivo de datos para armar el grafo
+		
 		Reader grafo = new Reader("./data/Temp_GCUT17.txt");
 		
 		matrizAdyacencia = ((Reader) grafo).getMatrizAdyacencia();
@@ -86,9 +86,9 @@ public class Model {
 			
 			//Crear restriccion para cortar una sola vez por cada arco
 			GRBLinExpr corteU;
-			for(int i =1; i<numNodosCorte;i++)
+			for(int i =1; i<numNodosCorte+1;i++)
 			{
-				for(int j =i+1; j<numNodosCorte;j++){
+				for(int j =i+1; j<numNodosCorte+1;j++){
 					if(matrizAdyacencia[i][j]==1)
 					{
 						corteU = new GRBLinExpr();
@@ -118,14 +118,13 @@ public class Model {
 				System.out.println("El tiempo total de corte es de: "+objval+" segundos");
 				
 				GRBVar[] vars=model.getVars();
-				ArrayList<String> camino= new ArrayList();
+				ArrayList<String> camino= new ArrayList<String>();
 				String anterior ="0";
 				boolean termino=false;
 				
-				for(int j=0; j<vars.length;j++)
+				/*for(int j=0; j<vars.length;j++)
 				{
 					String n1=vars[j].get(GRB.StringAttr.VarName);
-					String nombrex=n1.split("x")[1];
 					String viaje=n1.split("\\(")[1];
 					String inicio=viaje.split(",")[0];
 					String destino=viaje.split(",")[1].split("\\)")[0];
@@ -144,39 +143,45 @@ public class Model {
 						}
 						System.out.println(inicio+" >> "+destino +" "+corteOno);
 					}
-				}
+				}*/
 				int i=0;
 				//Esto todavia no imprime bien los atributos
-				/*while(!termino){
+				while(!termino){
 					String n1=vars[i].get(GRB.StringAttr.VarName);
-					String nombrex=n1.split("x")[1];
 					String viaje=n1.split("\\(")[1];
 					String inicio=viaje.split(",")[0];
 					String destino=viaje.split(",")[1].split("\\)")[0];
 					String corteOno="";
 					double valorX=vars[i].get(GRB.DoubleAttr.X);
 					if(valorX>0 && inicio.equals(anterior)){
-						camino.add(inicio);
-						anterior = destino;
-						i=0;
-						int inicioN = Integer.parseInt(inicio);
-						int fin = Integer.parseInt(destino);
-						if(inicioN < numNodosCorte && fin < numNodosCorte)
+						if(!buscarEnCamino(camino, inicio, destino))
 						{
-							corteOno = "Corta";
+							camino.add(inicio);
+							anterior = destino;
+							i=0;
+							int inicioN = Integer.parseInt(inicio);
+							int fin = Integer.parseInt(destino);
+							if(inicioN <= numNodosCorte && fin <= numNodosCorte)
+							{
+								corteOno = "Corta";
+							}
+							else if(inicioN > numNodosCorte && fin > numNodosCorte)
+							{
+								corteOno = "Aire";
+							}
+							System.out.println(inicio+" >> "+destino +" "+corteOno);
 						}
-						else if(inicioN >= numNodosCorte && fin >= numNodosCorte)
+						else
 						{
-							corteOno = "Aire";
+							camino.add(inicio);
 						}
-						System.out.println(inicio+" >> "+destino +" "+corteOno);
 					}
 					if(i==vars.length-1)
 					{
 						termino=true;
 					}
 					i++;
-				}*/
+				}
 			}
 			catch(GRBException e){
 				e.printStackTrace();
@@ -191,6 +196,26 @@ public class Model {
 	public static int darNumNodosTotal()
 	{
 		return numNodosTotal;
+	}
+	
+	public static boolean buscarEnCamino(ArrayList<String> camino, String nodoInicio, String nodoFin)
+	{
+		boolean esta=false;
+		String anterior="0";
+		String nodoC;
+
+		for(int i=1; i<camino.size() && !esta;i++)
+		{
+			nodoC=camino.get(i);
+			if(nodoC.equals(nodoFin) && anterior.equals(nodoInicio)){
+				esta=true;
+			}
+			else
+			{
+				anterior = nodoC;
+			}
+		}
+		return esta;
 	}
 	
 }

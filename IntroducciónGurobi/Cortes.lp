@@ -3663,6 +3663,7 @@ Subject To
  Corte_Unico_entre_59_y_60: x(59,60) + x(60,59) = 1
  Corte_Unico_entre_60_y_61: x(60,61) + x(61,60) = 1
  Corte_Unico_entre_62_y_63: x(62,63) + x(63,62) = 1
+ Corte_Unico_entre_63_y_64: x(63,64) + x(64,63) = 1
 Bounds
 Binaries
  x(0,1) x(0,2) x(0,3) x(0,4) x(0,5) x(0,6) x(0,7) x(0,8) x(0,9) x(0,10)
