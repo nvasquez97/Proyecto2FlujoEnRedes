@@ -172,22 +172,22 @@ public class Reader {
 			
 			generarMatrices();
 			
-			System.out.println("Acabé con " + tiempo + " milisegundos");
+			System.out.println("Acabé la lectura y creación del grafo en " + tiempo + " milisegundos");
 			
-			for(int i = 0; i < arcosCorte.size(); i++)
-			{
-				//System.out.println("("+arcosCorte.get(i)[0] + "," + arcosCorte.get(i)[1] + ") -> ("+arcosCorte.get(i)[2]+","+arcosCorte.get(i)[3]+")");
-				System.out.println(arcosCorte.get(i)[0]+"\t"+arcosCorte.get(i)[1]);
-				System.out.println(arcosCorte.get(i)[2]+"\t"+arcosCorte.get(i)[3]);
-			}
-			
-			System.out.println("Nodos:");
-			
-			for(int i = 0; i < nodosCorte.size(); i++)
-			{
-				//System.out.println("("+arcosCorte.get(i)[0] + "," + arcosCorte.get(i)[1] + ") -> ("+arcosCorte.get(i)[2]+","+arcosCorte.get(i)[3]+")");
-				System.out.println(nodosCorte.get(i)[0]+"\t"+nodosCorte.get(i)[1]);
-			}
+//			for(int i = 0; i < arcosCorte.size(); i++)
+//			{
+//				//System.out.println("("+arcosCorte.get(i)[0] + "," + arcosCorte.get(i)[1] + ") -> ("+arcosCorte.get(i)[2]+","+arcosCorte.get(i)[3]+")");
+//				System.out.println(arcosCorte.get(i)[0]+"\t"+arcosCorte.get(i)[1]);
+//				System.out.println(arcosCorte.get(i)[2]+"\t"+arcosCorte.get(i)[3]);
+//			}
+//			
+//			System.out.println("Nodos:");
+//			
+//			for(int i = 0; i < nodosCorte.size(); i++)
+//			{
+//				//System.out.println("("+arcosCorte.get(i)[0] + "," + arcosCorte.get(i)[1] + ") -> ("+arcosCorte.get(i)[2]+","+arcosCorte.get(i)[3]+")");
+//				System.out.println(nodosCorte.get(i)[0]+"\t"+nodosCorte.get(i)[1]);
+//			}
 		}
 		/*
 		 * Informa en caso de ocurrir un error.
@@ -423,7 +423,7 @@ public class Reader {
 			
 			double costoArco = 0;
 			
-			double distanciaArco = Math.sqrt((arco[0]-arco[2])^2+(arco[1]-arco[3])^2);
+			double distanciaArco = Math.sqrt(Math.pow((double)(arco[0]-arco[2]),2)+Math.pow((double)(arco[1]-arco[3]),2));
 			
 			costoArco = 0.1/50 * distanciaArco;
 			
@@ -445,11 +445,12 @@ public class Reader {
 				{
 					double costoArco = 0;
 					
-					double distanciaArco = Math.sqrt((nodoSalida[0]-nodoLlegada[0])^2+(nodoSalida[1]-nodoLlegada[1])^2);
+					double distanciaArco = Math.sqrt(Math.pow((double)(nodoSalida[0]-nodoLlegada[0]),2)+Math.pow((double)(nodoSalida[1]-nodoLlegada[1]),2));
 					
 					double tramo1 = Math.min(5, distanciaArco);
 					double tramo2 = Math.max(0,Math.min(100, distanciaArco)-5);
 					double tramo3 = Math.max(0, distanciaArco-100);
+					
 					costoArco = 0.2/5 * tramo1+0.3/95*tramo2+0.1/100*tramo3;
 					
 					matrizCostos[numNodosCorte+i+1][numNodosCorte+j+1] = costoArco;
