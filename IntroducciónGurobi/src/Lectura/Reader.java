@@ -464,8 +464,8 @@ public class Reader {
 			
 			matrizCostos[numNodosCorte+i+1][i+1] = 0;
 			matrizCostos[i+1][numNodosCorte+i+1] = 0;
-			matrizAdyacencia[numNodosCorte+i+1][i+1] = 0;
-			matrizAdyacencia[i+1][numNodosCorte+i+1] = 0;	
+			matrizAdyacencia[numNodosCorte+i+1][i+1] = 1;
+			matrizAdyacencia[i+1][numNodosCorte+i+1] = 1;	
 		}
 	}
 	
