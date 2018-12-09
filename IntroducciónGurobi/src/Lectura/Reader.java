@@ -403,9 +403,9 @@ public class Reader {
 		for(int i = 0; i<nodosCorte.size()+nodosAire.size();i++)
 		{
 			matrizAdyacencia[0][i+1]=1;
-			matrizAdyacencia[i+1][numNodosCorte] = 1;
+			matrizAdyacencia[i+1][numNodosCorte+numNodosAire +1] = 1;
 			matrizCostos[0][i+1]=0;
-			matrizCostos[i+1][numNodosCorte] = 0;
+			matrizCostos[i+1][numNodosCorte+ numNodosAire +1] = 0;
 		}
 		
 		for(int i = 0; i < arcosCorte.size();i++)
