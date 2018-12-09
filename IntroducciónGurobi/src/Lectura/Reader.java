@@ -400,7 +400,7 @@ public class Reader {
 		matrizCostos = new double[numNodosAire + numNodosCorte + 2][numNodosAire + numNodosCorte + 2];
 		
 		//Arcos del nodo doomie de salida a todos y de todos al dommie de llegada
-		for(int i = 0; i<nodosCorte.size();i++)
+		for(int i = 0; i<nodosCorte.size()+nodosAire.size();i++)
 		{
 			matrizAdyacencia[0][i+1]=1;
 			matrizAdyacencia[i+1][numNodosCorte] = 1;
@@ -454,7 +454,9 @@ public class Reader {
 					costoArco = 0.2/5 * tramo1+0.3/95*tramo2+0.1/100*tramo3;
 					
 					matrizCostos[numNodosCorte+i+1][numNodosCorte+j+1] = costoArco;
-					matrizCostos[numNodosCorte+j+1][numNodosCorte+i+1] = costoArco;			
+					matrizCostos[numNodosCorte+j+1][numNodosCorte+i+1] = costoArco;	
+					matrizAdyacencia[numNodosCorte+i+1][numNodosCorte+j+1] = 1;
+					matrizAdyacencia[numNodosCorte+j+1][numNodosCorte+i+1] = 1;
 				}
 			}
 			
@@ -487,7 +489,7 @@ public class Reader {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		Reader hola = new Reader("./data/Temp_GCUT16.txt");
+		Reader hola = new Reader("./data/Temp_GCUT1.txt");
 	}
 
 }
