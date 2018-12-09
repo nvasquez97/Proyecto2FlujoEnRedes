@@ -16,6 +16,7 @@ import gurobi.GRBVar;
  */
 public class Model {
 
+	private static long tiempoMilis;
 	private static int numNodosCorte;
 	private static int numNodosTotal;
 	
@@ -23,9 +24,9 @@ public class Model {
 	private static double[][] matrizCostos;
 	
 	public static void main(String[] args){
-		
+		tiempoMilis =  System.currentTimeMillis();
 		//TODO: Cargar el archivo de datos para armar el grafo
-		Reader grafo = new Reader("./data/Temp_GCUT1.txt");
+		Reader grafo = new Reader("./data/Temp_GCUT17.txt");
 		
 		matrizAdyacencia = ((Reader) grafo).getMatrizAdyacencia();
 		matrizCostos = grafo.getMatrizCostos();
@@ -37,7 +38,6 @@ public class Model {
 		GRBEnv env;
 		
 		try{
-			System.out.println(matrizAdyacencia.length-1);
 			env = new GRBEnv(null);
 			GRBModel model = new GRBModel(env);
 			//Crear las variables binarias 
@@ -94,7 +94,7 @@ public class Model {
 						corteU = new GRBLinExpr();
 						corteU.addTerm(1, model.getVarByName("x("+i+","+j+")"));
 						corteU.addTerm(1, model.getVarByName("x("+j+","+i+")"));
-						model.addConstr(corteU, GRB.GREATER_EQUAL, 1, "Corte Unico entre "+i+" y "+j);
+						model.addConstr(corteU, GRB.EQUAL, 1, "Corte Unico entre "+i+" y "+j);
 					}
 				}
 			}
@@ -111,7 +111,7 @@ public class Model {
 				
 				model.optimize();
 				
-				
+				System.out.println("SE DEMORA EN CORRER TODO ANTES DE IMPRIMIR SOLUCION "+ (System.currentTimeMillis()-tiempoMilis)+" milisegundos");
 				//Imprimir los resultados
 				
 				double objval = model.get(GRB.DoubleAttr.ObjVal);
@@ -121,8 +121,31 @@ public class Model {
 				ArrayList<String> camino= new ArrayList();
 				String anterior ="0";
 				boolean termino=false;
-				int i=0;
 				
+				for(int j=0; j<vars.length;j++)
+				{
+					String n1=vars[j].get(GRB.StringAttr.VarName);
+					String nombrex=n1.split("x")[1];
+					String viaje=n1.split("\\(")[1];
+					String inicio=viaje.split(",")[0];
+					String destino=viaje.split(",")[1].split("\\)")[0];
+					String corteOno="";
+					double valorX=vars[j].get(GRB.DoubleAttr.X);
+					if(valorX>0 ){
+						int inicioN = Integer.parseInt(inicio);
+						int fin = Integer.parseInt(destino);
+						if(inicioN < numNodosCorte && fin < numNodosCorte)
+						{
+							corteOno = "Corta";
+						}
+						else if(inicioN >= numNodosCorte && fin >= numNodosCorte)
+						{
+							corteOno = "Aire";
+						}
+						System.out.println(inicio+" >> "+destino +" "+corteOno);
+					}
+				}
+				int i=0;
 				//Esto todavia no imprime bien los atributos
 				/*while(!termino){
 					String n1=vars[i].get(GRB.StringAttr.VarName);
@@ -130,12 +153,23 @@ public class Model {
 					String viaje=n1.split("\\(")[1];
 					String inicio=viaje.split(",")[0];
 					String destino=viaje.split(",")[1].split("\\)")[0];
+					String corteOno="";
 					double valorX=vars[i].get(GRB.DoubleAttr.X);
 					if(valorX>0 && inicio.equals(anterior)){
 						camino.add(inicio);
-						anterior = inicio;
+						anterior = destino;
 						i=0;
-						System.out.println(inicio+" >> "+destino );
+						int inicioN = Integer.parseInt(inicio);
+						int fin = Integer.parseInt(destino);
+						if(inicioN < numNodosCorte && fin < numNodosCorte)
+						{
+							corteOno = "Corta";
+						}
+						else if(inicioN >= numNodosCorte && fin >= numNodosCorte)
+						{
+							corteOno = "Aire";
+						}
+						System.out.println(inicio+" >> "+destino +" "+corteOno);
 					}
 					if(i==vars.length-1)
 					{
