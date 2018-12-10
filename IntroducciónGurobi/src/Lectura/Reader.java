@@ -170,6 +170,8 @@ public class Reader {
 				}				
 			}
 			
+			in.close();
+			
 			tiempo = System.currentTimeMillis() - tiempo;
 			
 			generarMatrices();
@@ -393,10 +395,6 @@ public class Reader {
 			return true;
 		}
 	}
-	
-	public Hashtable<String, Integer> getCorrespondenciaNodos() {
-		return correspondenciaNodos;
-	}
 
 	public void generarMatrices()
 	{
@@ -492,6 +490,15 @@ public class Reader {
 	{
 		return numNodosCorte;
 	}
+	
+	public ArrayList<int[]> getNodosCorte() {
+		return nodosCorte;
+	}
+	
+	public ArrayList<int[]> getNodosAire() {
+		return nodosCorte;
+	}
+	
 	
 //	public static void main(String[] args) {
 //		// TODO Auto-generated method stub

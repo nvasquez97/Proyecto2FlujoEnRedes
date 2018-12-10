@@ -23,10 +23,14 @@ public class Model {
 	private static int[][] matrizAdyacencia;
 	private static double[][] matrizCostos;
 	
+	private static ArrayList<String> caminoFinal = new ArrayList<String>();
+	private static ArrayList<String> miniCamino = new ArrayList<String>();
+	private static ArrayList<Integer> nodosBifucardos = new ArrayList<Integer>();
+	
 	public static void main(String[] args){
 		tiempoMilis =  System.currentTimeMillis();
 		
-		Reader grafo = new Reader("./data/Temp_GCUT4.txt");
+		Reader grafo = new Reader("./data/Temp_GCUT13.txt");
 		
 		matrizAdyacencia = ((Reader) grafo).getMatrizAdyacencia();
 		matrizCostos = grafo.getMatrizCostos();
@@ -104,7 +108,6 @@ public class Model {
 			 * -1: Maximización
 			 */
 				model.set(GRB.IntAttr.ModelSense, 1);
-				
 				model.update();
 				
 				model.write("Cortes.lp");
@@ -118,18 +121,39 @@ public class Model {
 				System.out.println("El tiempo total de corte es de: "+objval+" segundos");
 				
 				GRBVar[] vars=model.getVars();
-				ArrayList<GRBVar> soluciones = new ArrayList<GRBVar>();
+				ArrayList<String> soluciones = new ArrayList<String>();				
 				
 				for(int j=0; j<vars.length;j++)
 				{
-					String n1=vars[j].get(GRB.StringAttr.VarName);
-					String viaje=n1.split("\\(")[1];
-					String inicio=viaje.split(",")[0];
-					String destino=viaje.split(",")[1].split("\\)")[0];
-					String corteOno="";
-					double valorX=vars[j].get(GRB.DoubleAttr.X);
-					if(valorX>0 ){
-						soluciones.add(vars[j]);
+					try
+					{
+						String n1=vars[j].get(GRB.StringAttr.VarName);
+						double valorX=vars[j].get(GRB.DoubleAttr.X);
+						if(valorX>0 )
+						{
+							soluciones.add(n1);							
+						}
+						
+					}
+					catch(Exception e)
+					{
+						
+					}
+				}
+				
+				model.dispose();
+				env.dispose();
+				
+				for(int j=0; j<soluciones.size();j++)
+				{
+					try
+					{
+						String n1= soluciones.get(j);
+						String viaje=n1.split("\\(")[1];
+						String inicio=viaje.split(",")[0];
+						String destino=viaje.split(",")[1].split("\\)")[0];
+						String corteOno="";					
+							
 						int inicioN = Integer.parseInt(inicio);
 						int fin = Integer.parseInt(destino);
 						if(inicioN < numNodosCorte && fin < numNodosCorte)
@@ -140,22 +164,23 @@ public class Model {
 						{
 							corteOno = "Aire";
 						}
-						System.out.println(inicio+" >> "+destino +" "+corteOno);
+						System.out.println( inicio+" >> "+destino +" "+corteOno);					
+					}
+					catch(Exception e)
+					{
+						
 					}
 				}
-				ArrayList<String> camino = new ArrayList<String>();
-				camino=construirCamino(soluciones, 0, camino); 
-				int anterior=0;
-				for(int i =1;i<camino.size();i++)
-				{
-					System.out.println(camino.get(anterior)+" >> "+camino.get(i));
-					anterior=i;
-				}
 				
+				boolean ordenamiento = construirCamino(soluciones, 0, numNodosTotal-1, numNodosTotal-1);
+				
+				for(int i = 0; i < caminoFinal.size(); i++)
+				{
+					System.out.println(caminoFinal.get(i));
+				}				
 				
 				System.out.println("SE DEMORA EN CORRER TODO "+ (System.currentTimeMillis()-tiempoMilis)+" milisegundos");
 				
-				System.out.println(soluciones.size()+" , "+camino.size());
 			}
 			catch(GRBException e){
 				e.printStackTrace();
@@ -193,138 +218,114 @@ public class Model {
 		return esta;
 	}
 	
-	public static ArrayList<String> construirCamino(ArrayList<GRBVar> camino, int posInicial, ArrayList<String> caminoActual)
+	public static boolean construirCamino(ArrayList<String> grafo, int nodoInicial, int nodoFinal, int nodoDefinitivo)
 	{
+		boolean llego = false;
+		
 		ArrayList<String> caminoRet = new ArrayList<String>();
-		boolean termino = false;
-		int i=1;
 		try
 		{
-			String n1I = camino.get(posInicial).get(GRB.StringAttr.VarName);
-			String viajeI=n1I.split("\\(")[1];
-			String inicioI=viajeI.split(",")[0];
-			String destinoI=viajeI.split(",")[1].split("\\)")[0];
-			String anterior = destinoI;
-			if(caminoActual.size() == 0 )
+			
+			int nodoActual = nodoInicial;				
+			
+			while(!llego)
 			{
-				caminoRet.add(inicioI);
-				caminoRet.add(destinoI);
-			}
-			else
-			{
-				caminoRet.addAll(caminoActual);
-				caminoRet.add(destinoI);
-			}
-			String n1;
-			String viaje;
-			String inicio;
-			String destino;
-			String corteOno;
-			String nuevoIni;
-			String nuevoFin;
-			while(!termino)
-			{
-				n1 = camino.get(i).get(GRB.StringAttr.VarName);
-				viaje=n1.split("\\(")[1];
-				inicio=viaje.split(",")[0];
-				destino=viaje.split(",")[1].split("\\)")[0];
-				corteOno="";
+				ArrayList<int[]> arcosSalida = new ArrayList<int[]>();
 				
-				if(inicio.equals(anterior) &&!buscarEnCamino(caminoRet, inicio, destino))
+				for(int i = 0; i < grafo.size(); i++)
 				{
-					if(destino.equals(inicioI))
+					
+					String viajeI=grafo.get(i).split("\\(")[1];
+					int inicioI= Integer.parseInt(viajeI.split(",")[0]);
+					int destinoI= Integer.parseInt(viajeI.split(",")[1].split("\\)")[0]);
+					
+					if(inicioI == nodoActual)
 					{
-						caminoRet.add(destino);
-						return caminoRet;
+						int[] arco = new int[2];
+						arco[0] = inicioI;
+						arco[1] = destinoI;
+						arcosSalida.add(arco);
+						miniCamino.add(nodoInicial + " - " +  arco[0] + " >> " + arco[1]);
 					}
-					else
+					
+					
+				}
+				
+				if(arcosSalida.size() == 1)
+				{
+					boolean llegoPuntoBifurcado = false;
+					
+					for (int i = 0; i < nodosBifucardos.size() && !llegoPuntoBifurcado; i++)
 					{
-						if(i<camino.size()-1)
+						if(nodosBifucardos.get(i) == arcosSalida.get(0)[1])
 						{
-							n1 = camino.get(i+1).get(GRB.StringAttr.VarName);
-							
-							viaje=n1.split("\\(")[1];
-							nuevoIni=viaje.split(",")[0];
-							nuevoFin =viaje.split(",")[1].split("\\)")[0];
-							boolean esta=false;
-							if(nuevoIni.equals(inicio))
-							{ 
-								ArrayList<String> nuevoC= construirCamino(camino, i, caminoRet);
-								if(nuevoC.get(nuevoC.size()-1).equals(inicio))
-								{
-									caminoRet = nuevoC;
-									anterior = nuevoFin;
-									caminoRet.add(nuevoFin);
-									i=0;
-									esta=true;
-								}
-								else
-								{
-									for(int j =caminoRet.size();j<nuevoC.size()-1 && !esta;j++)
-									{
-										if(nuevoC.get(j).equals(inicio))
-										{
-											caminoRet = nuevoC;
-											anterior = nuevoC.get(nuevoC.size()-1);
-											i=0;
-											esta=true;
-										}
-									}
-									if(!esta)
-									{
-										nuevoC= construirCamino(camino, i+1, caminoRet);
-										if(nuevoC.get(nuevoC.size()-1).equals(inicio))
-										{
-											caminoRet=nuevoC;
-											anterior = destino;
-											caminoRet.add(destino);
-											i=0;
-											esta=true;
-										}
-										for(int j =caminoRet.size();j<nuevoC.size()-1 && !esta;j++)
-										{
-											if(nuevoC.get(j).equals(inicio))
-											{
-												caminoRet = nuevoC;
-												anterior = nuevoC.get(nuevoC.size()-1);
-												i=0;
-												esta=true;
-											}
-										}
-									}
-								}
-								
-							}
-							else
-							{
-								caminoRet.add(destino);
-								anterior = destino;
-								i=0;
-							}
-						}
-						else
-						{
-							caminoRet.add(destino);
-							anterior = destino;
-							i=0;
+							llegoPuntoBifurcado = true;
 						}
 					}
 					
+					caminoRet.add(nodoActual +" >> " + arcosSalida.get(0)[1]);
+					nodoActual = arcosSalida.get(0)[1];	
+					if(nodoActual == nodoInicial)
+					{
+						llego = true;						
+					}
+					else if (nodoActual == nodoDefinitivo)
+					{
+						llego = true;						
+					}
+					else if (llegoPuntoBifurcado)
+					{
+						llego = true;
+					}
 				}
-				i++;
-				if(i==camino.size())
+				else
 				{
-					termino=true;
+					boolean[] llegoPuntoBifurcado = new boolean[arcosSalida.size()];					
+					
+					for (int j = 0; j < arcosSalida.size(); j++)
+					{
+						for (int i = 0; i < nodosBifucardos.size(); i++)
+						{
+							if(nodosBifucardos.get(i) == arcosSalida.get(j)[1])
+							{
+								llegoPuntoBifurcado[j] = true;
+							}
+						}						
+					}					
+					
+					nodosBifucardos.add(arcosSalida.get(0)[0]);
+					boolean[] caminos = new boolean[arcosSalida.size()];
+					boolean[] caminoDefinitivo = new boolean[arcosSalida.size()];
+					for(int j = 0; j < arcosSalida.size(); j++)
+					{
+						if(!llegoPuntoBifurcado[j])
+						{
+							caminos[j] = construirCamino(grafo, arcosSalida.get(j)[1], arcosSalida.get(j)[0], nodoDefinitivo);
+							if(caminos[j])
+							{
+								caminoDefinitivo[j] = true;
+							}
+						}						
+					}
+					
+					llego = true;
+				
+					for(int j = 0; j < arcosSalida.size(); j++)
+					{						
+						if(!(llegoPuntoBifurcado[j] || caminoDefinitivo[j]))
+						{
+							llego = false;
+						}
+					}					
 				}
 			}
 		}
-		catch(GRBException e)
+		catch(Exception e)
 		{
 			e.printStackTrace();
-		}
+		}	
 		
-		return caminoRet;
-		
+		return llego;
 	}
 	
 }
