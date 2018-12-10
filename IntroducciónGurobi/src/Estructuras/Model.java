@@ -118,10 +118,8 @@ public class Model {
 				System.out.println("El tiempo total de corte es de: "+objval+" segundos");
 				
 				GRBVar[] vars=model.getVars();
-				ArrayList<String> camino= new ArrayList<String>();
-				String anterior ="0";
-				boolean termino=false;
-				int numArcos=0;
+				ArrayList<GRBVar> soluciones = new ArrayList<GRBVar>();
+				
 				for(int j=0; j<vars.length;j++)
 				{
 					String n1=vars[j].get(GRB.StringAttr.VarName);
@@ -131,6 +129,7 @@ public class Model {
 					String corteOno="";
 					double valorX=vars[j].get(GRB.DoubleAttr.X);
 					if(valorX>0 ){
+						soluciones.add(vars[j]);
 						int inicioN = Integer.parseInt(inicio);
 						int fin = Integer.parseInt(destino);
 						if(inicioN < numNodosCorte && fin < numNodosCorte)
@@ -142,52 +141,21 @@ public class Model {
 							corteOno = "Aire";
 						}
 						System.out.println(inicio+" >> "+destino +" "+corteOno);
-						numArcos++;
 					}
 				}
-				int i=0;
-				int numArcosdos=0;
-				//Esto todavia no imprime bien los atributos
-				System.out.println("Impresion 2*************************");
-				while(!termino){
-					String n1=vars[i].get(GRB.StringAttr.VarName);
-					String viaje=n1.split("\\(")[1];
-					String inicio=viaje.split(",")[0];
-					String destino=viaje.split(",")[1].split("\\)")[0];
-					String corteOno="";
-					double valorX=vars[i].get(GRB.DoubleAttr.X);
-					if(valorX>0 && inicio.equals(anterior)){
-						if(!buscarEnCamino(camino, inicio, destino))
-						{
-							camino.add(inicio);
-							anterior = destino;
-							i=0;
-							int inicioN = Integer.parseInt(inicio);
-							int fin = Integer.parseInt(destino);
-							if(inicioN <= numNodosCorte && fin <= numNodosCorte)
-							{
-								corteOno = "Corta";
-							}
-							else if(inicioN > numNodosCorte && fin > numNodosCorte)
-							{
-								corteOno = "Aire";
-							}
-							System.out.println(inicio+" >> "+destino +" "+corteOno);
-							numArcosdos++;
-						}
-						else
-						{
-							camino.add(inicio);
-						}
-					}
-					if(i==vars.length-1)
-					{
-						termino=true;
-					}
-					i++;
+				ArrayList<String> camino = new ArrayList<String>();
+				camino=construirCamino(soluciones, 0, camino); 
+				int anterior=0;
+				for(int i =1;i<camino.size();i++)
+				{
+					System.out.println(camino.get(anterior)+" >> "+camino.get(i));
+					anterior=i;
 				}
-				System.out.println("Hacen falta "+(numArcos-numArcosdos)+" arcos en la solución");
 				
+				
+				System.out.println("SE DEMORA EN CORRER TODO "+ (System.currentTimeMillis()-tiempoMilis)+" milisegundos");
+				
+				System.out.println(soluciones.size()+" , "+camino.size());
 			}
 			catch(GRBException e){
 				e.printStackTrace();
@@ -223,6 +191,140 @@ public class Model {
 			}
 		}
 		return esta;
+	}
+	
+	public static ArrayList<String> construirCamino(ArrayList<GRBVar> camino, int posInicial, ArrayList<String> caminoActual)
+	{
+		ArrayList<String> caminoRet = new ArrayList<String>();
+		boolean termino = false;
+		int i=1;
+		try
+		{
+			String n1I = camino.get(posInicial).get(GRB.StringAttr.VarName);
+			String viajeI=n1I.split("\\(")[1];
+			String inicioI=viajeI.split(",")[0];
+			String destinoI=viajeI.split(",")[1].split("\\)")[0];
+			String anterior = destinoI;
+			if(caminoActual.size() == 0 )
+			{
+				caminoRet.add(inicioI);
+				caminoRet.add(destinoI);
+			}
+			else
+			{
+				caminoRet.addAll(caminoActual);
+				caminoRet.add(destinoI);
+			}
+			String n1;
+			String viaje;
+			String inicio;
+			String destino;
+			String corteOno;
+			String nuevoIni;
+			String nuevoFin;
+			while(!termino)
+			{
+				n1 = camino.get(i).get(GRB.StringAttr.VarName);
+				viaje=n1.split("\\(")[1];
+				inicio=viaje.split(",")[0];
+				destino=viaje.split(",")[1].split("\\)")[0];
+				corteOno="";
+				
+				if(inicio.equals(anterior) &&!buscarEnCamino(caminoRet, inicio, destino))
+				{
+					if(destino.equals(inicioI))
+					{
+						caminoRet.add(destino);
+						return caminoRet;
+					}
+					else
+					{
+						if(i<camino.size()-1)
+						{
+							n1 = camino.get(i+1).get(GRB.StringAttr.VarName);
+							
+							viaje=n1.split("\\(")[1];
+							nuevoIni=viaje.split(",")[0];
+							nuevoFin =viaje.split(",")[1].split("\\)")[0];
+							boolean esta=false;
+							if(nuevoIni.equals(inicio))
+							{ 
+								ArrayList<String> nuevoC= construirCamino(camino, i, caminoRet);
+								if(nuevoC.get(nuevoC.size()-1).equals(inicio))
+								{
+									caminoRet = nuevoC;
+									anterior = nuevoFin;
+									caminoRet.add(nuevoFin);
+									i=0;
+									esta=true;
+								}
+								else
+								{
+									for(int j =caminoRet.size();j<nuevoC.size()-1 && !esta;j++)
+									{
+										if(nuevoC.get(j).equals(inicio))
+										{
+											caminoRet = nuevoC;
+											anterior = nuevoC.get(nuevoC.size()-1);
+											i=0;
+											esta=true;
+										}
+									}
+									if(!esta)
+									{
+										nuevoC= construirCamino(camino, i+1, caminoRet);
+										if(nuevoC.get(nuevoC.size()-1).equals(inicio))
+										{
+											caminoRet=nuevoC;
+											anterior = destino;
+											caminoRet.add(destino);
+											i=0;
+											esta=true;
+										}
+										for(int j =caminoRet.size();j<nuevoC.size()-1 && !esta;j++)
+										{
+											if(nuevoC.get(j).equals(inicio))
+											{
+												caminoRet = nuevoC;
+												anterior = nuevoC.get(nuevoC.size()-1);
+												i=0;
+												esta=true;
+											}
+										}
+									}
+								}
+								
+							}
+							else
+							{
+								caminoRet.add(destino);
+								anterior = destino;
+								i=0;
+							}
+						}
+						else
+						{
+							caminoRet.add(destino);
+							anterior = destino;
+							i=0;
+						}
+					}
+					
+				}
+				i++;
+				if(i==camino.size())
+				{
+					termino=true;
+				}
+			}
+		}
+		catch(GRBException e)
+		{
+			e.printStackTrace();
+		}
+		
+		return caminoRet;
+		
 	}
 	
 }
