@@ -30,7 +30,7 @@ public class Model {
 	public static void main(String[] args){
 		tiempoMilis =  System.currentTimeMillis();
 		
-		Reader grafo = new Reader("./data/Temp_GCUT13.txt");
+		Reader grafo = new Reader("./data/Temp_GCUT1.txt");
 		
 		matrizAdyacencia = ((Reader) grafo).getMatrizAdyacencia();
 		matrizCostos = grafo.getMatrizCostos();
@@ -164,7 +164,7 @@ public class Model {
 						{
 							corteOno = "Aire";
 						}
-						System.out.println( inicio+" >> "+destino +" "+corteOno);					
+						//System.out.println( inicio+" >> "+destino +" "+corteOno);					
 					}
 					catch(Exception e)
 					{
@@ -172,7 +172,25 @@ public class Model {
 					}
 				}
 				
-				boolean ordenamiento = construirCamino(soluciones, 0, numNodosTotal-1, numNodosTotal-1);
+				construirCamino(soluciones, 0, numNodosTotal-1, numNodosTotal-1);
+				String actual;
+				int j=0;
+				for(int i=0;i<miniCamino.size();i++)
+				{
+					j++;
+					if(j==10)
+					{
+						j=0;
+						System.out.println(miniCamino.get(i)+"||");
+					}
+					else
+					{
+						System.out.print(miniCamino.get(i)+"||");
+					}
+					
+				}
+				System.out.println("El camino ordenado tiene "+miniCamino.size()+ " arcos");
+				System.out.println("En total hay "+soluciones.size()+" arcos en la solución");
 				
 				for(int i = 0; i < caminoFinal.size(); i++)
 				{
@@ -218,6 +236,24 @@ public class Model {
 		return esta;
 	}
 	
+	public static boolean buscarEnCaminoN(ArrayList<String> camino, String arco)
+	{
+		boolean esta=false;
+		String arcoC;
+		String arcoP;
+		String parArco=arco.split("-")[1];
+		for(int i=0; i<camino.size() && !esta;i++)
+		{
+			arcoP=camino.get(i).split("-")[1];
+			arcoC=camino.get(i);
+			if(arcoC.equals(arco) || parArco.equals(arcoP)){
+				esta=true;
+			}
+			
+		}
+		return esta;
+	}
+	
 	public static boolean construirCamino(ArrayList<String> grafo, int nodoInicial, int nodoFinal, int nodoDefinitivo)
 	{
 		boolean llego = false;
@@ -245,7 +281,8 @@ public class Model {
 						arco[0] = inicioI;
 						arco[1] = destinoI;
 						arcosSalida.add(arco);
-						miniCamino.add(nodoInicial + " - " +  arco[0] + " >> " + arco[1]);
+						if(!buscarEnCaminoN(miniCamino, nodoInicial + " - " +  arco[0] + " >> " + arco[1]))
+							miniCamino.add(nodoInicial + " - " +  arco[0] + " >> " + arco[1]);
 					}
 					
 					
@@ -278,7 +315,7 @@ public class Model {
 						llego = true;
 					}
 				}
-				else
+				else if(arcosSalida.size() >1)
 				{
 					boolean[] llegoPuntoBifurcado = new boolean[arcosSalida.size()];					
 					
@@ -317,6 +354,10 @@ public class Model {
 							llego = false;
 						}
 					}					
+				}
+				else
+				{
+					llego=true;
 				}
 			}
 		}
